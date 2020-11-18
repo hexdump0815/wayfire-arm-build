@@ -1,14 +1,10 @@
 IMPORTANT: all this is still work in progress - not fully building yet!
 
-based on: http://blog.northfield.ws/wayfire/
-     and: https://github.com/DurandA/wayfire/wiki/Ubuntu-20.04-installation
+based on: https://github.com/DurandA/wayfire/wiki/Ubuntu-20.04-installation
 
 possible fitting display manager: https://git.sr.ht/~kennylevinsen/greetd/
 
-apt-get install git python3-pip pkg-config libwayland-dev autoconf libtool libffi-dev libxml2-dev libegl1-mesa-dev libgles2-mesa-dev libgbm-dev libinput-dev libxkbcommon-dev libpixman-1-dev xutils-dev xcb-proto python3-xcbgen libcairo2-dev libglm-dev libjpeg-dev libgtkmm-3.0-dev xwayland libdrm-dev libgirepository1.0-dev libsystemd-dev policykit-1
-
-# for sound support - optional
-apt-get install libasound2-dev pulseaudio
+apt-get install git python3-pip pkg-config libwayland-dev autoconf libtool libffi-dev libxml2-dev libegl1-mesa-dev libgles2-mesa-dev libgbm-dev libinput-dev libxkbcommon-dev libpixman-1-dev xutils-dev xcb-proto python3-xcbgen libcairo2-dev libglm-dev libjpeg-dev libgtkmm-3.0-dev xwayland libdrm-dev libgirepository1.0-dev libsystemd-dev policykit-1 libx11-xcb-dev libxcb-xinput-dev libxcb-composite0-dev libasound2-dev pulseaudio ninja-build libpulse-dev libgtk-layer-shell-dev
 
 export WF_PREFIX=/opt/wayfire
 # one of the next depending on arch
@@ -16,21 +12,18 @@ export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib/aarch64-linux-gnu/pkgconfig
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib/arm-linux-gnueabihf/pkgconfig
 
-mkdir /compile/source/wayfire
-cd /compile/source/wayfire
+cd /compile/source
 
+# lets better bring our own up to date meson
 git clone https://github.com/mesonbuild/meson.git
-ap-get install libx11-xcb-dev libxcb-xinput-dev libxcb-composite0-dev
-git clone https://github.com/swaywm/wlroots
+ln -s /compile/source/meson/meson.py /usr/local/bin/meson
+# maybe move the regular meson out of the way as it is too old
+#mv /usr/bin/meson /usr/bin/meson.off
+
 git clone https://github.com/WayfireWM/wf-install
-
-cd wlroots
-python3 ../meson/meson.py build --prefix=$WF_PREFIX && ninja -C build && ninja -C build install
-cd ..
-
 cd wf-install
-# replace master with a release tag - e.g. --stream 0.4.0 - to use a particular version
-./install.sh --prefix $WF_PREFIX --stream master --clean
+# replace the version with master if you want to build the current code
+./install.sh --prefix $WF_PREFIX --stream 0.6.0 --clean
 cd ..
 
 # create a symlink to use the startwayfire command in the terminal without its full path
