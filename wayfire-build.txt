@@ -1,0 +1,141 @@
+IMPORTANT: all this is still work in progress - not fully building yet!
+
+based on http://blog.northfield.ws/wayfire/
+possible fitting display manager: https://git.sr.ht/~kennylevinsen/greetd/
+
+apt-get install git python3-pip pkg-config libwayland-dev autoconf libtool libffi-dev libxml2-dev libegl1-mesa-dev libgles2-mesa-dev libgbm-dev libinput-dev libxkbcommon-dev libpixman-1-dev xutils-dev xcb-proto python-xcbgen libcairo2-dev libglm-dev libjpeg-dev libgtkmm-3.0-dev xwayland ninja doxygen check libgirepository1.0-dev
+
+export prefix=/opt/wayfire
+export PATH=$prefix/bin:$PATH
+# one of the next depending on arch
+export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib/x86_64-linux-gnu/pkgconfig
+export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib/aarch64-linux-gnu/pkgconfig
+export PKG_CONFIG_PATH=$prefix/lib/pkgconfig:$prefix/share/pkgconfig:$prefix/lib/arm-linux-gnueabihf/pkgconfig
+
+mkdir /compile/source/wayfire
+cd /compile/source/wayfire
+
+git clone https://github.com/mesonbuild/meson.git
+git clone https://gitlab.freedesktop.org/wayland/wayland
+git clone git://anongit.freedesktop.org/wayland/wayland-protocols
+# not sure if this is required for ubuntu 20.04 too - ?
+git clone git://anongit.freedesktop.org/xcb/proto
+git clone git://anongit.freedesktop.org/xcb/libxcb
+# not sure if this is required for ubuntu 20.04 too - ?
+git clone https://gitlab.freedesktop.org/libinput/libinput
+git clone https://github.com/swaywm/wlroots
+git clone https://github.com/WayfireWM/wayfire
+# for gcc7: filesystem -> experimental::filesystem
+# most probably not required for ubuntu 20.04 due to newer gcc
+cd wayfire
+patch -p1 < /compile/doc/wayfire/gcc7-filesystem.patch
+cd ..
+git clone https://github.com/WayfireWM/wf-shell
+git clone https://github.com/WayfireWM/wcm
+
+cd wayland
+./autogen.sh --prefix=$prefix --disable-documentation && make && make install
+cd ..
+
+cd wayland-protocols
+./autogen.sh --prefix=$prefix && make && make install
+cd ..
+
+# not sure if this is required for ubuntu 20.04 too - ?
+cd proto/
+./autogen.sh --prefix=$prefix && make && make install
+cd ..
+
+cd libxcb
+./autogen.sh --prefix=$prefix && make && make install
+cd ..
+
+# not sure if this is required for ubuntu 20.04 too - ?
+cd libinput
+python3 ../meson/meson.py build --prefix=$prefix -Ddocumentation=false && ninja -C build && ninja -C build install
+cd ..
+
+cd wlroots
+python3 ../meson/meson.py build --prefix=$prefix && ninja -C build && ninja -C build install
+cd ..
+
+cd wayfire
+python3 ../meson/meson.py build --prefix=$prefix && ninja -C build && ninja -C build install
+cd ..
+
+cd wf-shell
+python3 ../meson/meson.py build --prefix=$prefix && ninja -C build && ninja -C build install
+cd ..
+
+--- build error ---
+this does not build on ubuntu-18.04:
+../src/background/background.cpp: In member function ‘void BackgroundDrawingArea::show_image(Glib::RefPtr<Gdk::Pixbuf>, double, double)’:
+../src/background/background.cpp:33:35: error: ‘create_surface_from_pixbuf’ is not a member of ‘Gdk::Cairo’
+     to_image.source = Gdk::Cairo::create_surface_from_pixbuf(image,
+                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/background/background.cpp:33:35: note: suggested alternative: ‘set_source_pixbuf’
+     to_image.source = Gdk::Cairo::create_surface_from_pixbuf(image,
+                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+                                   set_source_pixbuf
+
+looks like libgtkmm 3.24 is required, but ubuntu 18.04 only has 3.22
+ubuntu 20.04 seems to have 3.24
+--- build error ---
+
+cd wcm
+python3 ../meson/meson.py build --prefix=$prefix && ninja -C build && ninja -C build install
+cd ..
+
+# copy config files in place and modify them a bit
+cp wayfire/wayfire.ini.default ~/.config/wayfire.ini
+cp wf-shell/wf-shell.ini.example ~/.config/wf-shell.ini
+sed -i 's/env XDG_CURRENT_DESKTOP=GNOME gnome-control-center/wcm/' ~/.config/wf-shell.ini
+
+# optionally set a background image in ~/.config/wf-shell.ini from your system
+
+# save this script as /usr/local/bin/wayfire
+--- snip ---
+#!/bin/bash
+
+prefix=/opt/wayfire
+log_file=/tmp/wayfire.log
+
+export PATH="$prefix"/bin:$PATH
+export XDG_DATA_DIRS="$prefix"/share:$XDG_DATA_DIRS
+export GTK_THEME=Adwaita:dark
+export GDK_BACKEND=wayland
+export QT_QPA_PLATFORM=wayland
+export LD_LIBRARY_PATH="$prefix"/lib:"$prefix"/lib/x86_64-linux-gnu/
+exec "$prefix"/bin/wayfire "$@" &> "$log_file"
+--- snip ---
+
+# make it executable
+chmod +x /usr/local/bin/wayfire
+
+# run it
+/usr/local/bin/wayfire
+
+# open an application - either run a native terminal ...
+WAYLAND_DISPLAY=wayland-0 GDK_BACKEND=wayland terminator
+
+# ... or an x11 one
+DISPLAY=:1 xterm
+
+# optionally switch to tty to use the drm backend
+# make sure your user is part of the video group to run as user
+usermod -G video -a some-user
+
+# optionally create /usr/share/wayland-sessions/wayfire.desktop to login from lightdm
+--- snip ---
+[Desktop Entry]
+Version=1.0
+Name=Wayfire Session
+Comment=Use this session to run Wayfire as your desktop environment
+Exec=/usr/local/bin/wayfire
+Type=Application
+--- snip ---
+
+# firefox should work as a native browser
+# ctrl+alt+bckspc to log out
+# to remove the compiled packages and source, remove /opt/wayfire, /compile/source/wayfire, /usr/local/bin/wayfire and /usr/share/wayland-sessions/wayfire.desktop
+# checkout wayfire.org for more information.

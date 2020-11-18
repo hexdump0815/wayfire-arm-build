@@ -1,0 +1,26 @@
+diff --git a/src/output/plugin-loader.cpp b/src/output/plugin-loader.cpp
+index e2ac102..28e16c0 100644
+--- a/src/output/plugin-loader.cpp
++++ b/src/output/plugin-loader.cpp
+@@ -2,7 +2,7 @@
+ #include <algorithm>
+ #include <set>
+ #include <memory>
+-#include <filesystem>
++#include <experimental/filesystem>
+ #include <dlfcn.h>
+ 
+ #include "plugin-loader.hpp"
+@@ -186,10 +186,10 @@ void plugin_manager::reload_dynamic_plugins()
+                 continue;
+             }
+ 
+-            for (std::filesystem::path plugin_prefix : plugin_prefixes)
++            for (std::experimental::filesystem::path plugin_prefix : plugin_prefixes)
+             {
+                 auto plugin_path = plugin_prefix / ("lib" + plugin_name + ".so");
+-                if (std::filesystem::exists(plugin_path))
++                if (std::experimental::filesystem::exists(plugin_path))
+                 {
+                     next_plugins.push_back(plugin_path);
+                     break;
