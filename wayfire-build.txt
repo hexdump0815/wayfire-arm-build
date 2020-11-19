@@ -76,4 +76,4 @@ network:
 
 # runtime requirements
 
-apt-get install libgtk-layer-shell0 libxcb-composite0
+apt-get install libgtk-layer-shell0 libxcb-composite0 libxcb-xinput0
