@@ -73,3 +73,7 @@ network:
   version: 2
   renderer: NetworkManager
 --- snip ---
+
+# runtime requirements
+
+apt-get install libgtk-layer-shell0 libxcb-composite0
