@@ -1,0 +1,19 @@
+# some sway utils which are useful for wayfire
+
+git clone https://github.com/swaywm/swayidle.git
+cd swayidle
+mkdir build
+cd build
+meson .. . --prefix=/opt/wayfire
+ninja
+ninja install
+cd ../..
+
+git clone https://github.com/swaywm/swaylock.git
+cd swaylock
+mkdir build
+cd build
+meson .. . --prefix=/opt/wayfire
+ninja
+ninja install
+cd ../..

@@ -1,0 +1,33 @@
+# possible wayland terminal which works with lima
+
+apt-get install scdoc
+git clone https://codeberg.org/dnkl/fcft
+cd fcft
+mkdir build
+cd build/
+meson .. . --prefix=/opt/foot
+ninja
+ninja install
+cd ../..
+
+# one of the next depending on arch
+export PKG_CONFIG_PATH=/opt/foot/lib/x86_64-linux-gnu/pkgconfig
+export PKG_CONFIG_PATH=/opt/foot/lib/aarch64-linux-gnu/pkgconfig
+export PKG_CONFIG_PATH=/opt/foot/lib/arm-linux-gnueabihf/pkgconfig
+git clone https://codeberg.org/dnkl/tllist
+cd tllist
+mkdir build
+cd build
+meson .. . --prefix=/opt/foot
+ninja
+ninja install
+cd ../..
+
+git clone https://codeberg.org/dnkl/foot
+cd foot
+mkdir build
+cd build
+meson .. . --prefix=/opt/foot
+ninja
+ninja install
+cd ../..

@@ -1,0 +1,10 @@
+# given up on it as it requires glsl 3.3, so nothing for lima etc.
+
+apt-get rustc install cmake pkg-config libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev python3
+
+git clone https://github.com/alacritty/alacritty.git
+cd alacritty
+git checkout v0.6.0
+cargo build --release
+
+result: target/release/alacritty
